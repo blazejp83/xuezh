@@ -3,6 +3,7 @@ package audio
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -26,6 +27,21 @@ type ServerState struct {
 	PID            int
 	Model          string
 	StartupSeconds float64 // time from spawn to ready
+}
+
+// StopResult represents the outcome of a server stop operation.
+type StopResult struct {
+	Status     string // "stopped"
+	WasRunning bool   // true if a server was actually running and was stopped
+}
+
+// StatusResult represents the current server status.
+type StatusResult struct {
+	Status        string  // "running" or "stopped"
+	Port          int     // 0 if stopped
+	PID           int     // 0 if stopped
+	Model         string  // "" if stopped
+	UptimeSeconds float64 // 0 if stopped
 }
 
 // serverDir returns the path to {workspace}/server/, creating it if needed.
@@ -122,6 +138,19 @@ func readPortFile() int {
 		return 0
 	}
 	return port
+}
+
+// readModelFile reads the model name from the model file. Returns "" if not found.
+func readModelFile() string {
+	p, err := modelPath()
+	if err != nil {
+		return ""
+	}
+	data, err := os.ReadFile(p)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(data))
 }
 
 // processAlive checks if a process with the given PID is alive.
@@ -240,6 +269,108 @@ func warmUp(port int, model string) {
 	defer resp.Body.Close()
 	// Drain the response body (raw audio bytes).
 	_, _ = io.Copy(io.Discard, resp.Body)
+}
+
+// StopServer stops the running mlx-audio server with a three-phase graceful
+// shutdown: SIGTERM to process group, wait, then SIGKILL if needed.
+func StopServer() (StopResult, error) {
+	pid := readPIDFile()
+	if pid == 0 {
+		// No PID file — server not running.
+		return StopResult{Status: "stopped", WasRunning: false}, nil
+	}
+
+	if !processAlive(pid) {
+		// Process is dead — clean up stale files.
+		cleanStateFiles()
+		return StopResult{Status: "stopped", WasRunning: false}, nil
+	}
+
+	// Phase 1: SIGTERM to process group.
+	err := syscall.Kill(-pid, syscall.SIGTERM)
+	if err != nil {
+		if errors.Is(err, syscall.ESRCH) {
+			cleanStateFiles()
+			return StopResult{Status: "stopped", WasRunning: false}, nil
+		}
+		if errors.Is(err, syscall.EPERM) {
+			return StopResult{}, fmt.Errorf("permission denied killing process group %d", pid)
+		}
+	}
+
+	// Wait up to 5 seconds for process to die.
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		if !processAlive(pid) {
+			cleanStateFiles()
+			return StopResult{Status: "stopped", WasRunning: true}, nil
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	// Phase 2: SIGKILL to process group.
+	err = syscall.Kill(-pid, syscall.SIGKILL)
+	if err != nil && !errors.Is(err, syscall.ESRCH) {
+		// Best effort — continue to cleanup.
+	}
+
+	// Wait up to 2 seconds for forced kill.
+	deadline = time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if !processAlive(pid) {
+			break
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	// Phase 3: Clean up state files (never remove server.log).
+	cleanStateFiles()
+	return StopResult{Status: "stopped", WasRunning: true}, nil
+}
+
+// ServerStatus returns the current status of the mlx-audio server.
+func ServerStatus() (StatusResult, error) {
+	pid := readPIDFile()
+	if pid == 0 {
+		return StatusResult{Status: "stopped"}, nil
+	}
+
+	if !processAlive(pid) {
+		// Stale PID — clean up.
+		cleanStateFiles()
+		return StatusResult{Status: "stopped"}, nil
+	}
+
+	port := readPortFile()
+	model := readModelFile()
+
+	// Verify server is actually responsive.
+	if port > 0 {
+		client := &http.Client{Timeout: 2 * time.Second}
+		url := fmt.Sprintf("http://127.0.0.1:%d/v1/models", port)
+		resp, err := client.Get(url)
+		if err == nil {
+			_ = resp.Body.Close()
+		}
+		// Whether responsive or not, the process is alive — report running.
+	}
+
+	// Calculate uptime from PID file modification time.
+	var uptime float64
+	pp, err := pidPath()
+	if err == nil {
+		if info, err := os.Stat(pp); err == nil {
+			uptime = time.Since(info.ModTime()).Seconds()
+		}
+	}
+
+	return StatusResult{
+		Status:        "running",
+		Port:          port,
+		PID:           pid,
+		Model:         model,
+		UptimeSeconds: uptime,
+	}, nil
 }
 
 // StartServer spawns the mlx-audio server as a managed subprocess with process
