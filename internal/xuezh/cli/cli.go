@@ -660,10 +660,114 @@ func runAudio(args []string) int {
 		return runAudioTTS(args[1:])
 	case "process-voice":
 		return runAudioProcessVoice(args[1:])
+	case "server":
+		return runAudioServer(args[1:])
 	default:
 		printUsage()
 		return 1
 	}
+}
+
+func runAudioServer(args []string) int {
+	if len(args) == 0 {
+		printUsage()
+		return 1
+	}
+	switch args[0] {
+	case "start":
+		return runAudioServerStart(args[1:])
+	case "stop":
+		return runAudioServerStop(args[1:])
+	case "status":
+		return runAudioServerStatus(args[1:])
+	default:
+		printUsage()
+		return 1
+	}
+}
+
+func runAudioServerStart(args []string) int {
+	fs := flag.NewFlagSet("audio server start", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	port := fs.Int("port", 0, "server port (0 = resolve from config/env/default)")
+	model := fs.String("model", "", "model name (empty = resolve from config/env/default)")
+	_ = fs.Bool("json", true, "Output JSON envelope")
+	if err := fs.Parse(args); err != nil {
+		return 1
+	}
+
+	// Port resolution: flag -> config -> env -> default.
+	resolvedPort := *port
+	if resolvedPort == 0 {
+		if value, ok := configString("audio", "server_port"); ok {
+			if parsed, err := strconv.Atoi(value); err == nil && parsed > 0 {
+				resolvedPort = parsed
+			}
+		}
+	}
+	if resolvedPort == 0 {
+		if envValue := os.Getenv("XUEZH_TTS_SERVER_PORT"); envValue != "" {
+			if parsed, err := strconv.Atoi(envValue); err == nil && parsed > 0 {
+				resolvedPort = parsed
+			}
+		}
+	}
+	if resolvedPort == 0 {
+		resolvedPort = 8921
+	}
+
+	// Model resolution: flag -> config -> env -> default.
+	resolvedModel := *model
+	if resolvedModel == "" {
+		if value, ok := configString("audio", "server_model"); ok {
+			resolvedModel = value
+		}
+	}
+	if resolvedModel == "" {
+		if envValue := os.Getenv("XUEZH_TTS_SERVER_MODEL"); envValue != "" {
+			resolvedModel = envValue
+		}
+	}
+	if resolvedModel == "" {
+		resolvedModel = "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit"
+	}
+
+	result, err := audio.StartServer(resolvedPort, resolvedModel)
+	if err != nil {
+		var toolMissing process.ToolMissingError
+		if errors.As(err, &toolMissing) {
+			return emitTypedError(
+				"audio.server.start",
+				"TOOL_MISSING",
+				err.Error(),
+				map[string]any{"tool": toolMissing.Tool, "port": resolvedPort, "model": resolvedModel},
+			)
+		}
+		return emitTypedError(
+			"audio.server.start",
+			"BACKEND_FAILED",
+			err.Error(),
+			map[string]any{"port": resolvedPort, "model": resolvedModel},
+		)
+	}
+
+	out := envelope.OK("audio.server.start", map[string]any{
+		"status":          result.Status,
+		"port":            result.Port,
+		"pid":             result.PID,
+		"model":           result.Model,
+		"startup_seconds": result.StartupSeconds,
+		"backend":         map[string]any{"id": "mlx-audio", "features": []string{"tts", "server"}},
+	}, nil, false, nil)
+	return emit(out)
+}
+
+func runAudioServerStop(args []string) int {
+	return emitTypedError("audio.server.stop", "NOT_IMPLEMENTED", "not yet implemented", nil)
+}
+
+func runAudioServerStatus(args []string) int {
+	return emitTypedError("audio.server.status", "NOT_IMPLEMENTED", "not yet implemented", nil)
 }
 
 func runAudioConvert(args []string) int {
