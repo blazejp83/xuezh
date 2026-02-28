@@ -763,11 +763,45 @@ func runAudioServerStart(args []string) int {
 }
 
 func runAudioServerStop(args []string) int {
-	return emitTypedError("audio.server.stop", "NOT_IMPLEMENTED", "not yet implemented", nil)
+	fs := flag.NewFlagSet("audio server stop", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	_ = fs.Bool("json", true, "Output JSON envelope")
+	if err := fs.Parse(args); err != nil {
+		return 1
+	}
+	result, err := audio.StopServer()
+	if err != nil {
+		return emitTypedError("audio.server.stop", "BACKEND_FAILED", err.Error(), nil)
+	}
+	out := envelope.OK("audio.server.stop", map[string]any{
+		"status":      result.Status,
+		"was_running": result.WasRunning,
+	}, nil, false, nil)
+	return emit(out)
 }
 
 func runAudioServerStatus(args []string) int {
-	return emitTypedError("audio.server.status", "NOT_IMPLEMENTED", "not yet implemented", nil)
+	fs := flag.NewFlagSet("audio server status", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	_ = fs.Bool("json", true, "Output JSON envelope")
+	if err := fs.Parse(args); err != nil {
+		return 1
+	}
+	result, err := audio.ServerStatus()
+	if err != nil {
+		return emitTypedError("audio.server.status", "BACKEND_FAILED", err.Error(), nil)
+	}
+	data := map[string]any{
+		"status": result.Status,
+	}
+	if result.Status == "running" {
+		data["port"] = result.Port
+		data["pid"] = result.PID
+		data["model"] = result.Model
+		data["uptime_seconds"] = result.UptimeSeconds
+	}
+	out := envelope.OK("audio.server.status", data, nil, false, nil)
+	return emit(out)
 }
 
 func runAudioConvert(args []string) int {
