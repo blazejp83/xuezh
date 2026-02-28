@@ -9,11 +9,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Server Lifecycle
 
-- [ ] **SRVR-01**: Agent can start local TTS server via `audio server start` with configurable port and model
-- [ ] **SRVR-02**: Agent can stop local TTS server via `audio server stop` with clean process group shutdown
-- [ ] **SRVR-03**: Agent can check server status via `audio server status` (running/stopped, PID, port)
-- [ ] **SRVR-04**: Server start polls for readiness before returning success (or timeout error after 120s)
-- [ ] **SRVR-05**: Server start runs warm-up TTS request before declaring ready
+- [x] **SRVR-01**: Agent can start local TTS server via `audio server start` with configurable port and model
+- [x] **SRVR-02**: Agent can stop local TTS server via `audio server stop` with clean process group shutdown
+- [x] **SRVR-03**: Agent can check server status via `audio server status` (running/stopped, PID, port)
+- [x] **SRVR-04**: Server start polls for readiness before returning success (or timeout error after 120s)
+- [x] **SRVR-05**: Server start runs warm-up TTS request before declaring ready
 
 ### TTS Synthesis
 
@@ -59,11 +59,11 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRVR-01 | Phase 1 | Pending |
-| SRVR-02 | Phase 1 | Pending |
-| SRVR-03 | Phase 1 | Pending |
-| SRVR-04 | Phase 1 | Pending |
-| SRVR-05 | Phase 1 | Pending |
+| SRVR-01 | Phase 1 | Complete |
+| SRVR-02 | Phase 1 | Complete |
+| SRVR-03 | Phase 1 | Complete |
+| SRVR-04 | Phase 1 | Complete |
+| SRVR-05 | Phase 1 | Complete |
 | TTS-01 | Phase 2 | Pending |
 | TTS-02 | Phase 2 | Pending |
 | TTS-03 | Phase 2 | Pending |

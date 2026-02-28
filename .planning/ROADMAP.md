@@ -10,7 +10,7 @@ None
 
 ## Phases
 
-- [ ] **Phase 1: Server Lifecycle** - Start/stop/status commands with PID tracking and health polling
+- [x] **Phase 1: Server Lifecycle** - Start/stop/status commands with PID tracking and health polling
 - [ ] **Phase 2: Local TTS Backend** - HTTP client calling mlx-audio server with ffmpeg conversion
 - [ ] **Phase 3: Polish & Integration** - Edge-tts fallback, backend selection, voices, style control
 
@@ -24,9 +24,8 @@ None
 **Plans**: TBD
 
 Plans:
-- [ ] 01-01: Server spawn with process group isolation, PID/port tracking, health polling
-- [ ] 01-02: Server stop with clean process group shutdown, status command
-- [ ] 01-03: Warm-up TTS request before declaring ready, timeout handling
+- [x] 01-01: Server spawn with process group isolation, PID/port tracking, health polling, warm-up
+- [x] 01-02: Server stop with clean process group shutdown, status command
 
 ### Phase 2: Local TTS Backend
 **Goal**: Agent can generate Chinese speech via HTTP calls to running mlx-audio server
@@ -54,6 +53,6 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Server Lifecycle | 0/3 | Not started | - |
+| 1. Server Lifecycle | 2/2 | Complete | 2026-02-28 |
 | 2. Local TTS Backend | 0/2 | Not started | - |
 | 3. Polish & Integration | 0/2 | Not started | - |
