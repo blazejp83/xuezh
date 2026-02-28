@@ -59,25 +59,25 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SRVR-01 | — | Pending |
-| SRVR-02 | — | Pending |
-| SRVR-03 | — | Pending |
-| SRVR-04 | — | Pending |
-| SRVR-05 | — | Pending |
-| TTS-01 | — | Pending |
-| TTS-02 | — | Pending |
-| TTS-03 | — | Pending |
-| TTS-04 | — | Pending |
-| TTS-05 | — | Pending |
-| TTS-06 | — | Pending |
-| BKND-01 | — | Pending |
-| BKND-02 | — | Pending |
+| SRVR-01 | Phase 1 | Pending |
+| SRVR-02 | Phase 1 | Pending |
+| SRVR-03 | Phase 1 | Pending |
+| SRVR-04 | Phase 1 | Pending |
+| SRVR-05 | Phase 1 | Pending |
+| TTS-01 | Phase 2 | Pending |
+| TTS-02 | Phase 2 | Pending |
+| TTS-03 | Phase 2 | Pending |
+| TTS-04 | Phase 2 | Pending |
+| TTS-05 | Phase 3 | Pending |
+| TTS-06 | Phase 3 | Pending |
+| BKND-01 | Phase 3 | Pending |
+| BKND-02 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13 ⚠️
+- Mapped to phases: 13
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-28*
-*Last updated: 2026-02-28 after initial definition*
+*Last updated: 2026-02-28 after roadmap creation*
