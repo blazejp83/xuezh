@@ -20,6 +20,13 @@ import (
 	"github.com/joshp123/xuezh/internal/xuezh/process"
 )
 
+// localVoices lists the known Qwen3-TTS voices for agent discoverability.
+var localVoices = []map[string]string{
+	{"name": "Vivian", "description": "standard Mandarin, female"},
+	{"name": "Dylan", "description": "Beijing dialect, male"},
+	{"name": "Eric", "description": "Sichuan dialect, male"},
+}
+
 // LocalTTSError is a classified error from the local mlx-audio TTS backend.
 // The Reason field distinguishes failure modes so the agent can take appropriate
 // action (e.g., restart server, warn user, retry).
@@ -272,6 +279,7 @@ func LocalTTS(text, voice, outPath, purpose string) (AudioResult, error) {
 			"id":       "local",
 			"features": []string{"tts"},
 		},
+		"available_voices": localVoices,
 	}
 	return AudioResult{Data: data, Artifacts: []envelope.Artifact{artifact}}, nil
 }
