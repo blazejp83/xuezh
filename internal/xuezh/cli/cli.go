@@ -863,6 +863,7 @@ func runAudioTTS(args []string) int {
 	fs.SetOutput(os.Stderr)
 	text := fs.String("text", "", "text")
 	voice := fs.String("voice", "", "voice (XiaoxiaoNeural for edge-tts, Vivian for local)")
+	instruct := fs.String("instruct", "", "speech style instruction (local backend only, e.g. 'speak slowly')")
 	outPath := fs.String("out", "", "output path")
 	backend := fs.String("backend", "", "backend")
 	_ = fs.Bool("json", true, "Output JSON envelope")
@@ -880,6 +881,12 @@ func runAudioTTS(args []string) int {
 			map[string]any{"backend": resolvedBackend})
 	}
 
+	if *instruct != "" && resolvedBackend != "local" {
+		return emitTypedError("audio.tts", "INVALID_ARGUMENT",
+			"--instruct is only supported with --backend local",
+			map[string]any{"backend": resolvedBackend, "instruct": *instruct})
+	}
+
 	if *voice == "" && resolvedBackend != "local" {
 		*voice = "XiaoxiaoNeural"
 	}
@@ -887,7 +894,7 @@ func runAudioTTS(args []string) int {
 	var result audio.AudioResult
 	var err error
 	if resolvedBackend == "local" {
-		result, err = audio.LocalTTS(*text, *voice, *outPath, "tts_audio")
+		result, err = audio.LocalTTS(*text, *voice, *instruct, *outPath, "tts_audio")
 	} else {
 		result, err = audio.TTSAudio(*text, *voice, *outPath, resolvedBackend, "tts_audio")
 	}
