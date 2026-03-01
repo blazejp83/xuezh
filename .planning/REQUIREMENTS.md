@@ -17,10 +17,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### TTS Synthesis
 
-- [ ] **TTS-01**: Agent can generate Chinese speech from text via HTTP POST to local server
-- [ ] **TTS-02**: Agent can select from available Chinese voices (default: Vivian)
-- [ ] **TTS-03**: Audio output converts from server WAV to ogg/mp3 via existing ffmpeg pipeline
-- [ ] **TTS-04**: TTS errors return structured JSON for all failure modes (server down, crash/stale PID, OOM, timeout, port conflict, text too long)
+- [x] **TTS-01**: Agent can generate Chinese speech from text via HTTP POST to local server
+- [x] **TTS-02**: Agent can select from available Chinese voices (default: Vivian)
+- [x] **TTS-03**: Audio output converts from server WAV to ogg/mp3 via existing ffmpeg pipeline
+- [x] **TTS-04**: TTS errors return structured JSON for all failure modes (server down, crash/stale PID, OOM, timeout, port conflict, text too long)
 - [ ] **TTS-05**: Agent can control speech style via optional instruct parameter
 - [ ] **TTS-06**: Agent can use dialect voices (Dylan for Beijing, Eric for Sichuan)
 
@@ -64,10 +64,10 @@ Which phases cover which requirements. Updated by create-roadmap.
 | SRVR-03 | Phase 1 | Complete |
 | SRVR-04 | Phase 1 | Complete |
 | SRVR-05 | Phase 1 | Complete |
-| TTS-01 | Phase 2 | Pending |
-| TTS-02 | Phase 2 | Pending |
-| TTS-03 | Phase 2 | Pending |
-| TTS-04 | Phase 2 | Pending |
+| TTS-01 | Phase 2 | Complete |
+| TTS-02 | Phase 2 | Complete |
+| TTS-03 | Phase 2 | Complete |
+| TTS-04 | Phase 2 | Complete |
 | TTS-05 | Phase 3 | Pending |
 | TTS-06 | Phase 3 | Pending |
 | BKND-01 | Phase 3 | Pending |
