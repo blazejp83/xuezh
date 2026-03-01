@@ -46,7 +46,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 03-01: Backend selection flag, edge-tts backward compatibility
+- [x] 03-01: Backend selection flag, edge-tts backward compatibility
 - [ ] 03-02: Instruct parameter for speech style, dialect voice support
 
 ## Progress
@@ -55,4 +55,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Server Lifecycle | 2/2 | Complete | 2026-02-28 |
 | 2. Local TTS Backend | 2/2 | Complete | 2026-03-01 |
-| 3. Polish & Integration | 0/2 | Not started | - |
+| 3. Polish & Integration | 1/2 | In progress | - |
