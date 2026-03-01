@@ -21,13 +21,13 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TTS-02**: Agent can select from available Chinese voices (default: Vivian)
 - [x] **TTS-03**: Audio output converts from server WAV to ogg/mp3 via existing ffmpeg pipeline
 - [x] **TTS-04**: TTS errors return structured JSON for all failure modes (server down, crash/stale PID, OOM, timeout, port conflict, text too long)
-- [ ] **TTS-05**: Agent can control speech style via optional instruct parameter
-- [ ] **TTS-06**: Agent can use dialect voices (Dylan for Beijing, Eric for Sichuan)
+- [x] **TTS-05**: Agent can control speech style via optional instruct parameter
+- [x] **TTS-06**: Agent can use dialect voices (Dylan for Beijing, Eric for Sichuan)
 
 ### Backend Management
 
-- [ ] **BKND-01**: Edge-tts backend continues to work unchanged
-- [ ] **BKND-02**: Agent selects backend explicitly per TTS call (`--backend local` vs `--backend edge-tts`)
+- [x] **BKND-01**: Edge-tts backend continues to work unchanged
+- [x] **BKND-02**: Agent selects backend explicitly per TTS call (`--backend local` vs `--backend edge-tts`)
 
 ## v2 Requirements
 
@@ -68,10 +68,10 @@ Which phases cover which requirements. Updated by create-roadmap.
 | TTS-02 | Phase 2 | Complete |
 | TTS-03 | Phase 2 | Complete |
 | TTS-04 | Phase 2 | Complete |
-| TTS-05 | Phase 3 | Pending |
-| TTS-06 | Phase 3 | Pending |
-| BKND-01 | Phase 3 | Pending |
-| BKND-02 | Phase 3 | Pending |
+| TTS-05 | Phase 3 | Complete |
+| TTS-06 | Phase 3 | Complete |
+| BKND-01 | Phase 3 | Complete |
+| BKND-02 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 13 total

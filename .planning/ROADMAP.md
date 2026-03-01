@@ -12,7 +12,7 @@ None
 
 - [x] **Phase 1: Server Lifecycle** - Start/stop/status commands with PID tracking and health polling
 - [x] **Phase 2: Local TTS Backend** - HTTP client calling mlx-audio server with ffmpeg conversion
-- [ ] **Phase 3: Polish & Integration** - Edge-tts fallback, backend selection, voices, style control
+- [x] **Phase 3: Polish & Integration** - Edge-tts fallback, backend selection, voices, style control
 
 ## Phase Details
 
@@ -47,7 +47,7 @@ Plans:
 
 Plans:
 - [x] 03-01: Backend selection flag, edge-tts backward compatibility
-- [ ] 03-02: Instruct parameter for speech style, dialect voice support
+- [x] 03-02: Instruct parameter for speech style, dialect voice support
 
 ## Progress
 
@@ -55,4 +55,4 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Server Lifecycle | 2/2 | Complete | 2026-02-28 |
 | 2. Local TTS Backend | 2/2 | Complete | 2026-03-01 |
-| 3. Polish & Integration | 1/2 | In progress | - |
+| 3. Polish & Integration | 2/2 | Complete | 2026-03-01 |
