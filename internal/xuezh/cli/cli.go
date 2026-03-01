@@ -873,7 +873,14 @@ func runAudioTTS(args []string) int {
 		return emitTypedError("audio.tts", "INVALID_ARGUMENT", "text and out are required", map[string]any{"text": *text, "out": *outPath})
 	}
 	resolvedBackend := resolveAudioBackend(*backend, "edge-tts", "XUEZH_AUDIO_TTS_BACKEND", "tts_backend")
-	result, err := audio.TTSAudio(*text, *voice, *outPath, resolvedBackend, "tts_audio")
+
+	var result audio.AudioResult
+	var err error
+	if resolvedBackend == "local" {
+		result, err = audio.LocalTTS(*text, *voice, *outPath, "tts_audio")
+	} else {
+		result, err = audio.TTSAudio(*text, *voice, *outPath, resolvedBackend, "tts_audio")
+	}
 	if err != nil {
 		var toolMissing process.ToolMissingError
 		if errors.As(err, &toolMissing) {
@@ -903,7 +910,7 @@ func runAudioTTS(args []string) int {
 		}
 		return emitTypedError(
 			"audio.tts",
-			"INVALID_ARGUMENT",
+			"BACKEND_FAILED",
 			err.Error(),
 			map[string]any{"text": *text, "voice": *voice, "out": *outPath, "backend": resolvedBackend},
 		)
