@@ -862,7 +862,7 @@ func runAudioTTS(args []string) int {
 	fs := flag.NewFlagSet("audio tts", flag.ContinueOnError)
 	fs.SetOutput(os.Stderr)
 	text := fs.String("text", "", "text")
-	voice := fs.String("voice", "XiaoxiaoNeural", "voice")
+	voice := fs.String("voice", "", "voice (XiaoxiaoNeural for edge-tts, Vivian for local)")
 	outPath := fs.String("out", "", "output path")
 	backend := fs.String("backend", "", "backend")
 	_ = fs.Bool("json", true, "Output JSON envelope")
@@ -873,6 +873,16 @@ func runAudioTTS(args []string) int {
 		return emitTypedError("audio.tts", "INVALID_ARGUMENT", "text and out are required", map[string]any{"text": *text, "out": *outPath})
 	}
 	resolvedBackend := resolveAudioBackend(*backend, "edge-tts", "XUEZH_AUDIO_TTS_BACKEND", "tts_backend")
+
+	if resolvedBackend != "local" && resolvedBackend != "edge-tts" {
+		return emitTypedError("audio.tts", "INVALID_ARGUMENT",
+			fmt.Sprintf("unsupported TTS backend: %s (valid: local, edge-tts)", resolvedBackend),
+			map[string]any{"backend": resolvedBackend})
+	}
+
+	if *voice == "" && resolvedBackend != "local" {
+		*voice = "XiaoxiaoNeural"
+	}
 
 	var result audio.AudioResult
 	var err error
