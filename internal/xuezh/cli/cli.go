@@ -882,6 +882,20 @@ func runAudioTTS(args []string) int {
 		result, err = audio.TTSAudio(*text, *voice, *outPath, resolvedBackend, "tts_audio")
 	}
 	if err != nil {
+		var localTTSErr audio.LocalTTSError
+		if errors.As(err, &localTTSErr) {
+			details := map[string]any{
+				"reason":  localTTSErr.Reason,
+				"text":    *text,
+				"voice":   *voice,
+				"out":     *outPath,
+				"backend": resolvedBackend,
+			}
+			for k, v := range localTTSErr.Details {
+				details[k] = v
+			}
+			return emitTypedError("audio.tts", "BACKEND_FAILED", localTTSErr.Error(), details)
+		}
 		var toolMissing process.ToolMissingError
 		if errors.As(err, &toolMissing) {
 			return emitTypedError(
