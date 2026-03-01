@@ -3,6 +3,7 @@ package audio
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -162,7 +163,7 @@ func isConnectionReset(err error) bool {
 // All TTS server errors are returned as LocalTTSError with a classified reason
 // so the agent can take appropriate action. Non-server errors (path resolution,
 // ffmpeg) are returned as their original error types.
-func LocalTTS(text, voice, outPath, purpose string) (AudioResult, error) {
+func LocalTTS(text, voice, instruct, outPath, purpose string) (AudioResult, error) {
 	// 1. Read port from state file.
 	port := readPortFile()
 	if port == 0 {
@@ -219,9 +220,20 @@ func LocalTTS(text, voice, outPath, purpose string) (AudioResult, error) {
 
 	// 8. HTTP POST to mlx-audio server.
 	url := fmt.Sprintf("http://127.0.0.1:%d/v1/audio/speech", port)
-	body := fmt.Sprintf(`{"model": %q, "input": %q, "voice": %q}`, model, text, voice)
+	reqBody := map[string]string{
+		"model": model,
+		"input": text,
+		"voice": voice,
+	}
+	if instruct != "" {
+		reqBody["instruct"] = instruct
+	}
+	bodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return AudioResult{}, fmt.Errorf("failed to marshal TTS request: %w", err)
+	}
 	client := &http.Client{Timeout: 120 * time.Second}
-	resp, err := client.Post(url, "application/json", bytes.NewBufferString(body))
+	resp, err := client.Post(url, "application/json", bytes.NewReader(bodyBytes))
 	if err != nil {
 		return AudioResult{}, classifyHTTPError(err, port, pid)
 	}
@@ -280,6 +292,9 @@ func LocalTTS(text, voice, outPath, purpose string) (AudioResult, error) {
 			"features": []string{"tts"},
 		},
 		"available_voices": localVoices,
+	}
+	if instruct != "" {
+		data["instruct"] = instruct
 	}
 	return AudioResult{Data: data, Artifacts: []envelope.Artifact{artifact}}, nil
 }
