@@ -177,10 +177,10 @@ func LocalSTT(inPath, model string) (SttResult, error) {
 		model = DefaultSTTModel
 	}
 
-	// 4. Input file validation.
-	inputPath := expandHome(inPath)
-	if _, err := os.Stat(inputPath); err != nil {
-		return SttResult{}, fmt.Errorf("Input file not found: %s", inputPath)
+	// 4. Input file validation (resolve relative paths against workspace).
+	inputPath, err := resolveInputPath(inPath)
+	if err != nil {
+		return SttResult{}, fmt.Errorf("Input file not found: %s", inPath)
 	}
 
 	// 5. Build multipart form body.

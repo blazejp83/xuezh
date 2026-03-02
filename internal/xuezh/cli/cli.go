@@ -747,6 +747,12 @@ func runAudioServerStart(args []string) int {
 	if pythonPath == "" {
 		pythonPath = "python3"
 	}
+	// Expand ~ so exec.LookPath can find the binary.
+	if strings.HasPrefix(pythonPath, "~/") {
+		if home, err := os.UserHomeDir(); err == nil {
+			pythonPath = filepath.Join(home, pythonPath[2:])
+		}
+	}
 
 	result, err := audio.StartServer(resolvedPort, resolvedModel, pythonPath)
 	if err != nil {

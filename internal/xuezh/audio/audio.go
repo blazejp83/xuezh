@@ -127,9 +127,9 @@ func ConvertAudio(inPath, outPath, format, backend, purpose string) (AudioResult
 	if backend != "ffmpeg" {
 		return AudioResult{}, fmt.Errorf("Unsupported backend: %s", backend)
 	}
-	inputPath := expandHome(inPath)
-	if _, err := os.Stat(inputPath); err != nil {
-		return AudioResult{}, fmt.Errorf("Input file not found: %s", inputPath)
+	inputPath, err := resolveInputPath(inPath)
+	if err != nil {
+		return AudioResult{}, fmt.Errorf("Input file not found: %s", inPath)
 	}
 	resolvedOut, err := paths.ResolveInWorkspace(outPath)
 	if err != nil {
@@ -211,9 +211,9 @@ func STTAudio(inPath, backend string) (SttResult, error) {
 	if backend != "whisper" {
 		return SttResult{}, fmt.Errorf("Unsupported backend: %s", backend)
 	}
-	inputPath := expandHome(inPath)
-	if _, err := os.Stat(inputPath); err != nil {
-		return SttResult{}, fmt.Errorf("Input file not found: %s", inputPath)
+	inputPath, err := resolveInputPath(inPath)
+	if err != nil {
+		return SttResult{}, fmt.Errorf("Input file not found: %s", inPath)
 	}
 	if _, err := process.EnsureTool("whisper"); err != nil {
 		return SttResult{}, err
@@ -642,6 +642,31 @@ func mustArtifactPath(prefix, ext string) string {
 	_ = os.MkdirAll(dayPath, 0o755)
 	filename := fmt.Sprintf("%s-%s.%s", prefix, now.Format("20060102T150405Z"), ext)
 	return filepath.Join(dayPath, filename)
+}
+
+// resolveInputPath resolves an input file path: absolute paths and ~ paths are
+// used directly; relative paths are resolved against the workspace first, then
+// the current directory as a fallback.
+func resolveInputPath(inPath string) (string, error) {
+	expanded := expandHome(inPath)
+	// Absolute path — use as-is.
+	if filepath.IsAbs(expanded) {
+		if _, err := os.Stat(expanded); err != nil {
+			return "", err
+		}
+		return expanded, nil
+	}
+	// Relative path — try workspace first.
+	if resolved, err := paths.ResolveInWorkspace(expanded); err == nil {
+		if _, err := os.Stat(resolved); err == nil {
+			return resolved, nil
+		}
+	}
+	// Fallback to cwd.
+	if _, err := os.Stat(expanded); err != nil {
+		return "", err
+	}
+	return expanded, nil
 }
 
 func expandHome(path string) string {
