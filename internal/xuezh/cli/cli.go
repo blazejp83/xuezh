@@ -957,6 +957,7 @@ func runAudioStt(args []string) int {
 	fs.SetOutput(os.Stderr)
 	inPath := fs.String("in", "", "input audio path")
 	backend := fs.String("backend", "", "backend (local|whisper)")
+	model := fs.String("model", "", "STT model (local backend only)")
 	_ = fs.Bool("json", true, "Output JSON envelope")
 	if err := fs.Parse(args); err != nil {
 		return 1
@@ -972,10 +973,27 @@ func runAudioStt(args []string) int {
 			map[string]any{"backend": resolvedBackend})
 	}
 
+	// Model resolution: flag > config > env > default.
+	// Only relevant for "local" backend; whisper CLI manages its own model.
+	resolvedModel := *model
+	if resolvedModel == "" {
+		if value, ok := configString("audio", "stt_model"); ok {
+			resolvedModel = value
+		}
+	}
+	if resolvedModel == "" {
+		if envValue := os.Getenv("XUEZH_AUDIO_STT_MODEL"); envValue != "" {
+			resolvedModel = envValue
+		}
+	}
+	if resolvedModel == "" {
+		resolvedModel = "mlx-community/whisper-large-v3-turbo"
+	}
+
 	var result audio.SttResult
 	var err error
 	if resolvedBackend == "local" {
-		result, err = audio.LocalSTT(*inPath, "")
+		result, err = audio.LocalSTT(*inPath, resolvedModel)
 	} else {
 		result, err = audio.STTAudio(*inPath, resolvedBackend)
 	}
@@ -1041,7 +1059,23 @@ func runAudioProcessVoice(args []string) int {
 	}
 	backend := resolveAudioBackend("", "azure.speech", "XUEZH_AUDIO_PROCESS_VOICE_BACKEND", "process_voice_backend")
 	sttBackend := resolveAudioBackend("", "whisper", "XUEZH_AUDIO_STT_BACKEND", "stt_backend")
-	result, err := audio.ProcessVoice(*inPath, *refText, backend, sttBackend)
+
+	// STT model resolution: config > env > default.
+	// No CLI flag for process-voice; model comes from config/env/default.
+	sttModel := ""
+	if value, ok := configString("audio", "stt_model"); ok {
+		sttModel = value
+	}
+	if sttModel == "" {
+		if envValue := os.Getenv("XUEZH_AUDIO_STT_MODEL"); envValue != "" {
+			sttModel = envValue
+		}
+	}
+	if sttModel == "" {
+		sttModel = "mlx-community/whisper-large-v3-turbo"
+	}
+
+	result, err := audio.ProcessVoice(*inPath, *refText, backend, sttBackend, sttModel)
 	if err != nil {
 		var azureErr audio.AzureSpeechError
 		if errors.As(err, &azureErr) {

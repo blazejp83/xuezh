@@ -271,7 +271,7 @@ func STTAudio(inPath, backend string) (SttResult, error) {
 	return SttResult{Data: data, Artifacts: []envelope.Artifact{artifact}, Truncated: false, Limits: map[string]any{}}, nil
 }
 
-func ProcessVoice(inPath, refText, backend, sttBackend string) (ProcessVoiceResult, error) {
+func ProcessVoice(inPath, refText, backend, sttBackend, sttModel string) (ProcessVoiceResult, error) {
 	if backend != "local" && backend != "azure.speech" {
 		return ProcessVoiceResult{}, fmt.Errorf("Unsupported backend: %s", backend)
 	}
@@ -290,7 +290,7 @@ func ProcessVoice(inPath, refText, backend, sttBackend string) (ProcessVoiceResu
 		var sttResult SttResult
 		var err error
 		if sttBackend == "local" {
-			sttResult, err = LocalSTT(normalizedPath, "")
+			sttResult, err = LocalSTT(normalizedPath, sttModel)
 		} else {
 			sttResult, err = STTAudio(normalizedPath, "whisper")
 		}
