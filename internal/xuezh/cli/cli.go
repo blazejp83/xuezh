@@ -1040,7 +1040,8 @@ func runAudioProcessVoice(args []string) int {
 		return emitTypedError("audio.process-voice", "INVALID_ARGUMENT", "in and ref-text are required", map[string]any{"in": *inPath, "ref_text": *refText})
 	}
 	backend := resolveAudioBackend("", "azure.speech", "XUEZH_AUDIO_PROCESS_VOICE_BACKEND", "process_voice_backend")
-	result, err := audio.ProcessVoice(*inPath, *refText, backend)
+	sttBackend := resolveAudioBackend("", "whisper", "XUEZH_AUDIO_STT_BACKEND", "stt_backend")
+	result, err := audio.ProcessVoice(*inPath, *refText, backend, sttBackend)
 	if err != nil {
 		var azureErr audio.AzureSpeechError
 		if errors.As(err, &azureErr) {
@@ -1055,6 +1056,20 @@ func runAudioProcessVoice(args []string) int {
 				details[key] = value
 			}
 			return emitTypedError("audio.process-voice", errorType, azureErr.Error(), details)
+		}
+		var localSTTErr audio.LocalSTTError
+		if errors.As(err, &localSTTErr) {
+			details := map[string]any{
+				"reason":      localSTTErr.Reason,
+				"ref_text":    *refText,
+				"in":          *inPath,
+				"backend":     backend,
+				"stt_backend": sttBackend,
+			}
+			for k, v := range localSTTErr.Details {
+				details[k] = v
+			}
+			return emitTypedError("audio.process-voice", "BACKEND_FAILED", localSTTErr.Error(), details)
 		}
 		var toolMissing process.ToolMissingError
 		if errors.As(err, &toolMissing) {
