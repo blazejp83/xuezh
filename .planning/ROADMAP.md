@@ -80,7 +80,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 06-01: TBD (run /gsd:plan-phase 6 to break down)
+- [x] 06-01: STT model selection via --model flag and enriched transcript metadata
 
 ## Progress
 
@@ -91,4 +91,4 @@ Plans:
 | 3. Polish & Integration | v1.0 | 2/2 | Complete | 2026-03-01 |
 | 4. Local STT Client | v1.1 | 1/1 | Complete | 2026-03-02 |
 | 5. STT Backend Selection | v1.1 | 1/1 | Complete | 2026-03-02 |
-| 6. STT Polish | v1.1 | 0/? | Not started | - |
+| 6. STT Polish | v1.1 | 1/1 | Complete | 2026-03-02 |

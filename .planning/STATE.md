@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-28)
 
 **Core value:** Reliable, low-latency Chinese TTS and STT that works locally on Apple Silicon without internet dependency, controllable via CLI by an AI agent.
-**Current focus:** Milestone v1.1 Local STT — Phase 6 (STT Configuration)
+**Current focus:** Milestone v1.1 Local STT — COMPLETE
 
 ## Current Position
 
-Phase: 5 of 6 (STT Backend Selection) — COMPLETE
+Phase: 6 of 6 (STT Polish) — COMPLETE
 Plan: 01 complete
-Status: Phase 5 complete, ready for Phase 6
-Last activity: 2026-03-02 — Phase 5 Plan 01 complete
+Status: Phase 6 complete, v1.1 Local STT milestone complete
+Last activity: 2026-03-02 — Phase 6 Plan 01 complete
 
-Progress: ████████░░ ~85% (v1.0 complete, Phase 5 done)
+Progress: ██████████ 100% (v1.0 complete, v1.1 complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 5 min
-- Total execution time: ~0.59 hours
+- Total execution time: ~0.66 hours
 
 **By Phase:**
 
@@ -32,6 +32,7 @@ Progress: ████████░░ ~85% (v1.0 complete, Phase 5 done)
 | 03-polish-integration | 2 | 8 min | 4 min |
 | 04-local-stt-client | 1 | 4 min | 4 min |
 | 05-stt-backend-selection | 1 | 4 min | 4 min |
+| 06-stt-polish | 1 | 4 min | 4 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min, 4 min, 4 min, 4 min, 4 min
@@ -78,21 +79,26 @@ Recent decisions affecting current work:
 - STT backend validation uses allowlist (local, whisper) matching TTS pattern
 - ProcessVoice sttBackend resolved independently from process_voice_backend
 - LocalSTTError handling added to both audio stt and audio process-voice CLI handlers
+- STT model resolution uses simple inline chain (not resolveAudioBackend which has global fallback)
+- DefaultSTTModel exported from local_stt.go as safety net; CLI uses own resolution chain
+- extractTranscript handles duration extraction (removed duplicate from LocalSTT)
+- All transcript metadata fields (confidence, words, duration) are additive — omitted when absent
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-None yet.
+None.
 
 ### Roadmap Evolution
 
 - Milestone v1.1 Local STT created: local STT via mlx-audio server, 3 phases (Phase 4-6)
+- Milestone v1.1 Local STT complete: all STT requirements (STT-01 through STT-07) implemented
 
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Phase 5 Plan 01 complete
+Stopped at: Phase 6 Plan 01 complete — v1.1 milestone complete
 Resume file: None
