@@ -375,9 +375,9 @@ func ServerStatus() (StatusResult, error) {
 
 // StartServer spawns the mlx-audio server as a managed subprocess with process
 // group isolation, health polling, and a warm-up TTS request.
-func StartServer(port int, model string) (ServerState, error) {
-	// Ensure python3 is available.
-	if _, err := process.EnsureTool("python3"); err != nil {
+func StartServer(port int, model, pythonPath string) (ServerState, error) {
+	// Ensure python is available at the configured path.
+	if _, err := process.EnsureTool(pythonPath); err != nil {
 		return ServerState{}, err
 	}
 
@@ -405,7 +405,7 @@ func StartServer(port int, model string) (ServerState, error) {
 		return ServerState{}, fmt.Errorf("failed to open log file: %w", err)
 	}
 
-	cmd := exec.Command("python3", "-m", "mlx_audio.server",
+	cmd := exec.Command(pythonPath, "-m", "mlx_audio.server",
 		"--host", "127.0.0.1",
 		"--port", strconv.Itoa(port),
 	)

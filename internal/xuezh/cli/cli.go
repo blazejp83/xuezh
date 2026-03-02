@@ -734,7 +734,21 @@ func runAudioServerStart(args []string) int {
 		resolvedModel = "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit"
 	}
 
-	result, err := audio.StartServer(resolvedPort, resolvedModel)
+	// Python path resolution: config -> env -> default.
+	pythonPath := ""
+	if value, ok := configString("audio", "python_path"); ok {
+		pythonPath = value
+	}
+	if pythonPath == "" {
+		if envValue := os.Getenv("XUEZH_PYTHON_PATH"); envValue != "" {
+			pythonPath = envValue
+		}
+	}
+	if pythonPath == "" {
+		pythonPath = "python3"
+	}
+
+	result, err := audio.StartServer(resolvedPort, resolvedModel, pythonPath)
 	if err != nil {
 		var toolMissing process.ToolMissingError
 		if errors.As(err, &toolMissing) {
