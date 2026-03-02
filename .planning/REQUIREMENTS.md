@@ -35,9 +35,9 @@ Requirements for local STT milestone. Replaces whisper CLI with mlx-audio HTTP t
 
 ### Local STT Client
 
-- [ ] **STT-01**: Agent can transcribe Chinese audio via HTTP POST to `/v1/audio/transcriptions` on running mlx-audio server
-- [ ] **STT-02**: Transcription response parsed into structured transcript (text, segments with timestamps)
-- [ ] **STT-03**: STT errors return structured JSON for failure modes (server down, timeout, unsupported format, model error)
+- [x] **STT-01**: Agent can transcribe Chinese audio via HTTP POST to `/v1/audio/transcriptions` on running mlx-audio server
+- [x] **STT-02**: Transcription response parsed into structured transcript (text, segments with timestamps)
+- [x] **STT-03**: STT errors return structured JSON for failure modes (server down, timeout, unsupported format, model error)
 
 ### STT Backend Selection
 
@@ -93,9 +93,9 @@ Which phases cover which requirements. Updated by create-roadmap.
 | BKND-01 | Phase 3 | Complete |
 | BKND-02 | Phase 3 | Complete |
 
-| STT-01 | Phase 4 | Pending |
-| STT-02 | Phase 4 | Pending |
-| STT-03 | Phase 4 | Pending |
+| STT-01 | Phase 4 | Complete |
+| STT-02 | Phase 4 | Complete |
+| STT-03 | Phase 4 | Complete |
 | STT-04 | Phase 5 | Pending |
 | STT-05 | Phase 5 | Pending |
 | STT-06 | Phase 6 | Pending |

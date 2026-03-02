@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-28)
 
 **Core value:** Reliable, low-latency Chinese TTS and STT that works locally on Apple Silicon without internet dependency, controllable via CLI by an AI agent.
-**Current focus:** Milestone v1.1 Local STT — Phase 4 (Local STT Client)
+**Current focus:** Milestone v1.1 Local STT — Phase 5 (STT Backend Selection)
 
 ## Current Position
 
-Phase: 4 of 6 (Local STT Client)
-Plan: 01 complete
-Status: Plan 01 complete — LocalSTT client built
-Last activity: 2026-03-02 — Plan 04-01 executed
+Phase: 5 of 6 (STT Backend Selection)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-03-02 — Phase 4 complete
 
-Progress: ███████░░░ ~70% (v1.0 complete, Phase 4 Plan 01 done)
+Progress: ███████░░░ ~75% (v1.0 complete, Phase 4 done)
 
 ## Performance Metrics
 

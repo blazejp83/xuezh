@@ -60,7 +60,7 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 04-01: TBD (run /gsd:plan-phase 4 to break down)
+- [x] 04-01: LocalSTT HTTP client with multipart upload, response parsing, error classification
 
 #### Phase 5: STT Backend Selection
 **Goal**: Backend selection flag for STT (local vs whisper), backward compatibility with whisper CLI, process-voice pipeline update
@@ -89,6 +89,6 @@ Plans:
 | 1. Server Lifecycle | v1.0 | 2/2 | Complete | 2026-02-28 |
 | 2. Local TTS Backend | v1.0 | 2/2 | Complete | 2026-03-01 |
 | 3. Polish & Integration | v1.0 | 2/2 | Complete | 2026-03-01 |
-| 4. Local STT Client | v1.1 | 0/? | Not started | - |
+| 4. Local STT Client | v1.1 | 1/1 | Complete | 2026-03-02 |
 | 5. STT Backend Selection | v1.1 | 0/? | Not started | - |
 | 6. STT Polish | v1.1 | 0/? | Not started | - |
