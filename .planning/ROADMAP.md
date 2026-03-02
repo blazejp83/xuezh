@@ -2,21 +2,21 @@
 
 ## Overview
 
-Add local mlx-audio support to xuezh for both TTS and STT on Apple Silicon. v1.0 shipped local TTS via Qwen3-TTS. v1.1 adds local STT by consuming the same mlx-audio server's transcription endpoint, replacing the whisper CLI subprocess with GPU-accelerated HTTP calls.
+Add local mlx-audio support to xuezh for both TTS and STT on Apple Silicon. v1.0 shipped local TTS via Qwen3-TTS. v1.1 shipped local STT by consuming the same mlx-audio server's transcription endpoint, replacing the whisper CLI subprocess with GPU-accelerated HTTP calls.
 
 ## Domain Expertise
 
 None
 
-## Milestones
+## Completed Milestones
 
-- ✅ **v1.0 Local TTS** — Phases 1-3 (shipped 2026-03-01)
-- 🚧 **v1.1 Local STT** — Phases 4-6 (in progress)
+- [v1.0 Local TTS](milestones/v1.0-ROADMAP.md) (Phases 1-3) — SHIPPED 2026-03-01
+- [v1.1 Local STT](milestones/v1.1-ROADMAP.md) (Phases 4-6) — SHIPPED 2026-03-02
 
 ## Phases
 
 <details>
-<summary>✅ v1.0 Local TTS (Phases 1-3) — SHIPPED 2026-03-01</summary>
+<summary>v1.0 Local TTS (Phases 1-3) — SHIPPED 2026-03-01</summary>
 
 ### Phase 1: Server Lifecycle
 **Goal**: Agent can start, stop, and query the mlx-audio TTS server via CLI commands with reliable process management
@@ -47,40 +47,34 @@ Plans:
 
 </details>
 
-### 🚧 v1.1 Local STT (In Progress)
+<details>
+<summary>v1.1 Local STT (Phases 4-6) — SHIPPED 2026-03-02</summary>
 
-**Milestone Goal:** Replace whisper CLI subprocess with HTTP calls to existing mlx-audio server for GPU-accelerated transcription on Apple Silicon
-
-#### Phase 4: Local STT Client
+### Phase 4: Local STT Client
 **Goal**: HTTP client calling /v1/audio/transcriptions on existing mlx-audio server, response parsing, error classification for STT failure modes
 **Depends on**: v1.0 complete (server lifecycle already managed)
 **Requirements**: STT-01, STT-02, STT-03
-**Research**: Likely (mlx-audio /v1/audio/transcriptions API schema, supported models, multipart form format)
-**Research topics**: mlx-audio transcription endpoint request/response format, model names, audio format requirements
-**Plans**: TBD
 
 Plans:
 - [x] 04-01: LocalSTT HTTP client with multipart upload, response parsing, error classification
 
-#### Phase 5: STT Backend Selection
+### Phase 5: STT Backend Selection
 **Goal**: Backend selection flag for STT (local vs whisper), backward compatibility with whisper CLI, process-voice pipeline update
 **Depends on**: Phase 4
 **Requirements**: STT-04, STT-05
-**Research**: Unlikely (mirrors BKND-01/BKND-02 pattern from TTS)
-**Plans**: TBD
 
 Plans:
 - [x] 05-01: STT backend selection with CLI command and ProcessVoice routing
 
-#### Phase 6: STT Polish
+### Phase 6: STT Polish
 **Goal**: Model selection, transcript format improvements, confidence/timestamp metadata
 **Depends on**: Phase 5
 **Requirements**: STT-06, STT-07
-**Research**: Unlikely (internal patterns, metadata extraction)
-**Plans**: TBD
 
 Plans:
 - [x] 06-01: STT model selection via --model flag and enriched transcript metadata
+
+</details>
 
 ## Progress
 

@@ -46,8 +46,8 @@ Requirements for local STT milestone. Replaces whisper CLI with mlx-audio HTTP t
 
 ### STT Polish
 
-- [ ] **STT-06**: Agent can select transcription model for local STT backend
-- [ ] **STT-07**: Transcription response includes confidence scores and word-level timestamps when available
+- [x] **STT-06**: Agent can select transcription model for local STT backend
+- [x] **STT-07**: Transcription response includes confidence scores and word-level timestamps when available
 
 ## v2 Requirements
 
@@ -98,15 +98,15 @@ Which phases cover which requirements. Updated by create-roadmap.
 | STT-03 | Phase 4 | Complete |
 | STT-04 | Phase 5 | Complete |
 | STT-05 | Phase 5 | Complete |
-| STT-06 | Phase 6 | Pending |
-| STT-07 | Phase 6 | Pending |
+| STT-06 | Phase 6 | Complete |
+| STT-07 | Phase 6 | Complete |
 
 **Coverage:**
 - v1.0 requirements: 13 total (all complete)
-- v1.1 requirements: 7 total
+- v1.1 requirements: 7 total (all complete)
 - Mapped to phases: 20
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-28*
-*Last updated: 2026-03-02 after v1.1 milestone creation*
+*Last updated: 2026-03-02 after v1.1 milestone completion*
