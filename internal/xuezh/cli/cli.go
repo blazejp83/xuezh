@@ -658,6 +658,8 @@ func runAudio(args []string) int {
 		return runAudioConvert(args[1:])
 	case "tts":
 		return runAudioTTS(args[1:])
+	case "stt":
+		return runAudioStt(args[1:])
 	case "process-voice":
 		return runAudioProcessVoice(args[1:])
 	case "server":
@@ -947,6 +949,81 @@ func runAudioTTS(args []string) int {
 		)
 	}
 	out := envelope.OK("audio.tts", result.Data, result.Artifacts, false, nil)
+	return emit(out)
+}
+
+func runAudioStt(args []string) int {
+	fs := flag.NewFlagSet("audio stt", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	inPath := fs.String("in", "", "input audio path")
+	backend := fs.String("backend", "", "backend (local|whisper)")
+	_ = fs.Bool("json", true, "Output JSON envelope")
+	if err := fs.Parse(args); err != nil {
+		return 1
+	}
+	if *inPath == "" {
+		return emitTypedError("audio.stt", "INVALID_ARGUMENT", "in is required", map[string]any{"in": *inPath})
+	}
+	resolvedBackend := resolveAudioBackend(*backend, "whisper", "XUEZH_AUDIO_STT_BACKEND", "stt_backend")
+
+	if resolvedBackend != "local" && resolvedBackend != "whisper" {
+		return emitTypedError("audio.stt", "INVALID_ARGUMENT",
+			fmt.Sprintf("unsupported STT backend: %s (valid: local, whisper)", resolvedBackend),
+			map[string]any{"backend": resolvedBackend})
+	}
+
+	var result audio.SttResult
+	var err error
+	if resolvedBackend == "local" {
+		result, err = audio.LocalSTT(*inPath, "")
+	} else {
+		result, err = audio.STTAudio(*inPath, resolvedBackend)
+	}
+	if err != nil {
+		var localSTTErr audio.LocalSTTError
+		if errors.As(err, &localSTTErr) {
+			details := map[string]any{
+				"reason":  localSTTErr.Reason,
+				"in":      *inPath,
+				"backend": resolvedBackend,
+			}
+			for k, v := range localSTTErr.Details {
+				details[k] = v
+			}
+			return emitTypedError("audio.stt", "BACKEND_FAILED", localSTTErr.Error(), details)
+		}
+		var toolMissing process.ToolMissingError
+		if errors.As(err, &toolMissing) {
+			return emitTypedError(
+				"audio.stt",
+				"TOOL_MISSING",
+				err.Error(),
+				map[string]any{"tool": toolMissing.Tool, "in": *inPath, "backend": resolvedBackend},
+			)
+		}
+		var processFailed process.ProcessFailedError
+		if errors.As(err, &processFailed) {
+			return emitTypedError(
+				"audio.stt",
+				"BACKEND_FAILED",
+				"audio backend failed during stt",
+				map[string]any{
+					"cmd":        processFailed.Cmd,
+					"returncode": processFailed.ReturnCode,
+					"stderr":     trim(processFailed.Stderr),
+					"in":         *inPath,
+					"backend":    resolvedBackend,
+				},
+			)
+		}
+		return emitTypedError(
+			"audio.stt",
+			"INVALID_ARGUMENT",
+			err.Error(),
+			map[string]any{"in": *inPath, "backend": resolvedBackend},
+		)
+	}
+	out := envelope.OK("audio.stt", result.Data, result.Artifacts, result.Truncated, result.Limits)
 	return emit(out)
 }
 
