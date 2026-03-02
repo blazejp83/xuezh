@@ -41,8 +41,8 @@ Requirements for local STT milestone. Replaces whisper CLI with mlx-audio HTTP t
 
 ### STT Backend Selection
 
-- [ ] **STT-04**: Whisper CLI backend continues to work unchanged
-- [ ] **STT-05**: Agent selects STT backend explicitly (`--backend local` vs `--backend whisper`)
+- [x] **STT-04**: Whisper CLI backend continues to work unchanged
+- [x] **STT-05**: Agent selects STT backend explicitly (`--backend local` vs `--backend whisper`)
 
 ### STT Polish
 
@@ -96,8 +96,8 @@ Which phases cover which requirements. Updated by create-roadmap.
 | STT-01 | Phase 4 | Complete |
 | STT-02 | Phase 4 | Complete |
 | STT-03 | Phase 4 | Complete |
-| STT-04 | Phase 5 | Pending |
-| STT-05 | Phase 5 | Pending |
+| STT-04 | Phase 5 | Complete |
+| STT-05 | Phase 5 | Complete |
 | STT-06 | Phase 6 | Pending |
 | STT-07 | Phase 6 | Pending |
 
