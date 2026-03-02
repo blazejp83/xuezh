@@ -243,12 +243,8 @@ func LocalSTT(inPath, model string) (SttResult, error) {
 	}
 
 	// Extract transcript using the same structure as extractTranscript.
+	// Duration and confidence metadata are now extracted by extractTranscript itself.
 	transcript := extractTranscript(raw)
-
-	// Add duration if present in the verbose response.
-	if duration, ok := raw["duration"]; ok {
-		transcript["duration"] = duration
-	}
 
 	// 9. Write transcript artifact.
 	now, err := clock.NowUTC()

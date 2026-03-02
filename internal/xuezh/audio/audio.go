@@ -386,16 +386,63 @@ func extractTranscript(raw map[string]any) map[string]any {
 				continue
 			}
 			segText := strings.TrimSpace(fmt.Sprintf("%v", segMap["text"]))
-			segments = append(segments, map[string]any{
+			out := map[string]any{
 				"start": segMap["start"],
 				"end":   segMap["end"],
 				"text":  segText,
-			})
+			}
+
+			// Segment-level confidence metadata (when available from verbose_json).
+			if v, ok := segMap["avg_logprob"]; ok {
+				out["avg_logprob"] = v
+			}
+			if v, ok := segMap["no_speech_prob"]; ok {
+				out["no_speech_prob"] = v
+			}
+			if v, ok := segMap["compression_ratio"]; ok {
+				out["compression_ratio"] = v
+			}
+
+			// Word-level timestamps (when available from verbose_json).
+			if rawWords, ok := segMap["words"].([]any); ok {
+				words := []map[string]any{}
+				for _, w := range rawWords {
+					wMap, ok := w.(map[string]any)
+					if !ok {
+						continue
+					}
+					wordOut := map[string]any{}
+					if wv, ok := wMap["word"]; ok {
+						wordOut["word"] = wv
+					}
+					if wv, ok := wMap["start"]; ok {
+						wordOut["start"] = wv
+					}
+					if wv, ok := wMap["end"]; ok {
+						wordOut["end"] = wv
+					}
+					if wv, ok := wMap["probability"]; ok {
+						wordOut["probability"] = wv
+					}
+					if len(wordOut) > 0 {
+						words = append(words, wordOut)
+					}
+				}
+				if len(words) > 0 {
+					out["words"] = words
+				}
+			}
+
+			segments = append(segments, out)
 		}
 	}
 	transcript := map[string]any{"text": strings.TrimSpace(text), "segments": segments}
 	if lang, ok := raw["language"].(string); ok && lang != "" {
 		transcript["language"] = lang
+	}
+	// Top-level duration (when available in raw response).
+	if duration, ok := raw["duration"]; ok {
+		transcript["duration"] = duration
 	}
 	return transcript
 }
