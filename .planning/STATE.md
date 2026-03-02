@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-28)
 
 **Core value:** Reliable, low-latency Chinese TTS and STT that works locally on Apple Silicon without internet dependency, controllable via CLI by an AI agent.
-**Current focus:** Milestone v1.1 Local STT — Phase 5 (STT Backend Selection)
+**Current focus:** Milestone v1.1 Local STT — Phase 6 (STT Configuration)
 
 ## Current Position
 
-Phase: 5 of 6 (STT Backend Selection)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-02 — Phase 4 complete
+Phase: 5 of 6 (STT Backend Selection) — COMPLETE
+Plan: 01 complete
+Status: Phase 5 complete, ready for Phase 6
+Last activity: 2026-03-02 — Phase 5 Plan 01 complete
 
-Progress: ███████░░░ ~75% (v1.0 complete, Phase 4 done)
+Progress: ████████░░ ~85% (v1.0 complete, Phase 5 done)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 5 min
-- Total execution time: ~0.52 hours
+- Total execution time: ~0.59 hours
 
 **By Phase:**
 
@@ -31,6 +31,7 @@ Progress: ███████░░░ ~75% (v1.0 complete, Phase 4 done)
 | 02-local-tts-backend | 2 | 9 min | 4.5 min |
 | 03-polish-integration | 2 | 8 min | 4 min |
 | 04-local-stt-client | 1 | 4 min | 4 min |
+| 05-stt-backend-selection | 1 | 4 min | 4 min |
 
 **Recent Trend:**
 - Last 5 plans: 4 min, 4 min, 4 min, 4 min, 4 min
@@ -73,6 +74,10 @@ Recent decisions affecting current work:
 - STT language hardcoded to "zh" matching project scope
 - verbose_json response format used for segments with timestamps and duration
 - Multipart form upload for STT (file + model + language + response_format fields)
+- STT backend default is "whisper" (preserves existing behavior, STT-04)
+- STT backend validation uses allowlist (local, whisper) matching TTS pattern
+- ProcessVoice sttBackend resolved independently from process_voice_backend
+- LocalSTTError handling added to both audio stt and audio process-voice CLI handlers
 
 ### Pending Todos
 
@@ -89,5 +94,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Phase 4 Plan 01 complete
+Stopped at: Phase 5 Plan 01 complete
 Resume file: None
