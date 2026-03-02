@@ -1,10 +1,21 @@
 package audio
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/joshp123/xuezh/internal/xuezh/clock"
+	"github.com/joshp123/xuezh/internal/xuezh/envelope"
+	"github.com/joshp123/xuezh/internal/xuezh/jsonio"
+	"github.com/joshp123/xuezh/internal/xuezh/paths"
 )
 
 // defaultSTTModel is the default Whisper model for local STT via mlx-audio.
@@ -119,4 +130,175 @@ func classifySTTHTTPResponse(statusCode int, respBody []byte, port int) LocalSTT
 		Message: fmt.Sprintf("server returned HTTP %d: %s", statusCode, bodyPreview),
 		Details: map[string]any{"port": port, "http_status": statusCode, "body_preview": bodyPreview},
 	}
+}
+
+// LocalSTT transcribes audio via HTTP POST (multipart form) to the running
+// mlx-audio server's /v1/audio/transcriptions endpoint. The verbose JSON
+// response is parsed into a structured transcript matching the existing
+// extractTranscript format.
+//
+// All STT server errors are returned as LocalSTTError with a classified reason
+// so the agent can take appropriate action. Non-server errors (path resolution,
+// file I/O) are returned as their original error types.
+func LocalSTT(inPath, model string) (SttResult, error) {
+	// 1. Read port from state file.
+	port := readPortFile()
+	if port == 0 {
+		return SttResult{}, LocalSTTError{
+			Reason:  "server_down",
+			Message: "server not running (no port file)",
+			Details: map[string]any{"port": 0, "pid": 0},
+		}
+	}
+
+	// 2. Read PID from state file and verify liveness.
+	pid := readPIDFile()
+	if pid == 0 {
+		cleanStateFiles()
+		return SttResult{}, LocalSTTError{
+			Reason:  "server_down",
+			Message: "server not running (no PID file)",
+			Details: map[string]any{"port": port, "pid": 0},
+		}
+	}
+	if !processAlive(pid) {
+		cleanStateFiles()
+		return SttResult{}, LocalSTTError{
+			Reason:  "stale_pid",
+			Message: "server process is dead (stale PID)",
+			Details: map[string]any{"port": port, "pid": pid},
+		}
+	}
+
+	// 3. Model resolution: default if empty.
+	if model == "" {
+		model = defaultSTTModel
+	}
+
+	// 4. Input file validation.
+	inputPath := expandHome(inPath)
+	if _, err := os.Stat(inputPath); err != nil {
+		return SttResult{}, fmt.Errorf("Input file not found: %s", inputPath)
+	}
+
+	// 5. Build multipart form body.
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+
+	// Add file field.
+	fileField, err := writer.CreateFormFile("file", filepath.Base(inputPath))
+	if err != nil {
+		return SttResult{}, fmt.Errorf("failed to create multipart file field: %w", err)
+	}
+	f, err := os.Open(inputPath)
+	if err != nil {
+		return SttResult{}, fmt.Errorf("failed to open input file: %w", err)
+	}
+	if _, err := io.Copy(fileField, f); err != nil {
+		f.Close()
+		return SttResult{}, fmt.Errorf("failed to copy file to multipart: %w", err)
+	}
+	f.Close()
+
+	// Add text fields.
+	_ = writer.WriteField("model", model)
+	_ = writer.WriteField("language", "zh")
+	_ = writer.WriteField("response_format", "verbose_json")
+
+	if err := writer.Close(); err != nil {
+		return SttResult{}, fmt.Errorf("failed to close multipart writer: %w", err)
+	}
+
+	// 6. HTTP POST to /v1/audio/transcriptions.
+	url := fmt.Sprintf("http://127.0.0.1:%d/v1/audio/transcriptions", port)
+	req, err := http.NewRequest("POST", url, &buf)
+	if err != nil {
+		return SttResult{}, fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{Timeout: 120 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return SttResult{}, classifySTTHTTPError(err, port, pid)
+	}
+	defer resp.Body.Close()
+
+	// 7. Check HTTP status.
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		return SttResult{}, classifySTTHTTPResponse(resp.StatusCode, respBody, port)
+	}
+
+	// 8. Parse response JSON.
+	respBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return SttResult{}, fmt.Errorf("failed to read STT response body: %w", err)
+	}
+	var raw map[string]any
+	if err := json.Unmarshal(respBytes, &raw); err != nil {
+		return SttResult{}, fmt.Errorf("failed to parse STT response JSON: %w", err)
+	}
+
+	// Extract transcript using the same structure as extractTranscript.
+	transcript := extractTranscript(raw)
+
+	// Add duration if present in the verbose response.
+	if duration, ok := raw["duration"]; ok {
+		transcript["duration"] = duration
+	}
+
+	// 9. Write transcript artifact.
+	now, err := clock.NowUTC()
+	if err != nil {
+		return SttResult{}, err
+	}
+	basename := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
+	transcriptPath, err := artifactPath("stt-local-"+basename, "json", now)
+	if err != nil {
+		return SttResult{}, err
+	}
+	content, err := jsonio.Dumps(transcript)
+	if err != nil {
+		return SttResult{}, err
+	}
+	if err := os.WriteFile(transcriptPath, []byte(content), 0o644); err != nil {
+		return SttResult{}, err
+	}
+
+	workspace, err := paths.EnsureWorkspace()
+	if err != nil {
+		return SttResult{}, err
+	}
+	rel, err := relativeTo(workspace, transcriptPath)
+	if err != nil {
+		return SttResult{}, err
+	}
+	stat, err := os.Stat(transcriptPath)
+	if err != nil {
+		return SttResult{}, err
+	}
+	transcriptArtifact := envelope.Artifact{
+		Path:    rel,
+		MIME:    "application/json",
+		Purpose: "transcript",
+		Bytes:   intPtr(int(stat.Size())),
+	}
+
+	// 10. Return SttResult.
+	data := map[string]any{
+		"in":    inputPath,
+		"model": model,
+		"backend": map[string]any{
+			"id":       "local",
+			"features": []string{"stt"},
+		},
+		"transcript": transcript,
+	}
+	return SttResult{
+		Data:      data,
+		Artifacts: []envelope.Artifact{transcriptArtifact},
+		Truncated: false,
+		Limits:    map[string]any{},
+	}, nil
 }
