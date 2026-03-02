@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-28)
 ## Current Position
 
 Phase: 4 of 6 (Local STT Client)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-02 — Milestone v1.1 created
+Plan: 01 complete
+Status: Plan 01 complete — LocalSTT client built
+Last activity: 2026-03-02 — Plan 04-01 executed
 
-Progress: ██████░░░░ ~65% (v1.0 complete, v1.1 starting)
+Progress: ███████░░░ ~70% (v1.0 complete, Phase 4 Plan 01 done)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 5 min
-- Total execution time: ~0.45 hours
+- Total execution time: ~0.52 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: ██████░░░░ ~65% (v1.0 complete, v1.1 starting)
 | 01-server-lifecycle | 2 | 12 min | 6 min |
 | 02-local-tts-backend | 2 | 9 min | 4.5 min |
 | 03-polish-integration | 2 | 8 min | 4 min |
+| 04-local-stt-client | 1 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 5 min, 4 min, 4 min, 4 min
-- Trend: stable/improving
+- Last 5 plans: 4 min, 4 min, 4 min, 4 min, 4 min
+- Trend: stable
 
 ## Accumulated Context
 
@@ -65,6 +66,13 @@ Recent decisions affecting current work:
 - json.Marshal replaces fmt.Sprintf for LocalTTS HTTP body — cleaner conditional field handling
 - --instruct with non-local backend returns INVALID_ARGUMENT, not silently ignored
 - instruct field only included in HTTP body and response envelope when non-empty
+- LocalSTTError mirrors LocalTTSError as value type with same BACKEND_FAILED:reason:message format
+- HTTP 415 added to STT unsupported_format classification (file upload vs JSON body)
+- model_error reason added for HTTP 500 with model/load/not-found keywords (STT-specific)
+- Default STT model: mlx-community/whisper-large-v3-turbo (constant, configurable in Phase 6)
+- STT language hardcoded to "zh" matching project scope
+- verbose_json response format used for segments with timestamps and duration
+- Multipart form upload for STT (file + model + language + response_format fields)
 
 ### Pending Todos
 
@@ -81,5 +89,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-02
-Stopped at: Milestone v1.1 initialization
+Stopped at: Phase 4 Plan 01 complete
 Resume file: None
