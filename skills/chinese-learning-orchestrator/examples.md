@@ -12,7 +12,7 @@ xuezh review grade --item w_aaaaaaaaaaaa --recall 4 --pronunciation 2 --json
 
 ## Tone practice (word-level)
 ```bash
-xuezh audio tts --text "时间" --voice XiaoxiaoNeural --out artifacts/shijian.ogg --json
+xuezh audio tts --text "时间" --backend local --out artifacts/shijian.ogg --json
 # user records voice note to /tmp/voice.ogg
 xuezh audio process-voice --in /tmp/voice.ogg --ref-text "时间" --json
 ```

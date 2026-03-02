@@ -335,7 +335,7 @@ Stop early unless the user explicitly asks for more.
 - pick a short phrase (<= 7 syllables)
 - generate reference audio via `audio tts`
 - user sends voice note
-- `audio process-voice ...` (local v0 assessment uses transcript match only when selected)
+- `audio process-voice ...` (Azure Speech provides full pronunciation assessment; local backend gives transcript match only)
 - give 1–2 fixes, retry once
 
 ### /story style
@@ -386,8 +386,17 @@ xuezh review grade --item w_aaaaaaaaaaaa --recall 4 --pronunciation 2 --next-due
 
 ### Speaking loop (Telegram voice note)
 ```
-xuezh audio tts --text "你好" --voice XiaoxiaoNeural --out artifacts/tts.ogg --backend edge-tts --json
+# Start mlx-audio server first (if not already running)
+xuezh audio server start --json
+
+# Generate reference audio (local TTS, or use --backend edge-tts for cloud)
+xuezh audio tts --text "你好" --backend local --out artifacts/tts.ogg --json
+
+# Assess pronunciation (defaults to Azure Speech for full assessment scores)
 xuezh audio process-voice --in tests/fixtures/audio/voice_min.ogg --ref-text "你好" --json
+
+# Standalone transcription (always uses local Qwen3-ASR)
+xuezh audio stt --in tests/fixtures/audio/voice_min.ogg --json
 ```
 
 ### Content cache + logging
