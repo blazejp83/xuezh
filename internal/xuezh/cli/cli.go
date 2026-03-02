@@ -987,7 +987,7 @@ func runAudioStt(args []string) int {
 		}
 	}
 	if resolvedModel == "" {
-		resolvedModel = "mlx-community/whisper-large-v3-turbo"
+		resolvedModel = "mlx-community/Qwen3-ASR-1.7B-8bit"
 	}
 
 	var result audio.SttResult
@@ -1072,7 +1072,7 @@ func runAudioProcessVoice(args []string) int {
 		}
 	}
 	if sttModel == "" {
-		sttModel = "mlx-community/whisper-large-v3-turbo"
+		sttModel = "mlx-community/Qwen3-ASR-1.7B-8bit"
 	}
 
 	result, err := audio.ProcessVoice(*inPath, *refText, backend, sttBackend, sttModel)

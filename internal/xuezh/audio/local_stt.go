@@ -18,11 +18,11 @@ import (
 	"github.com/joshp123/xuezh/internal/xuezh/paths"
 )
 
-// DefaultSTTModel is the default Whisper model for local STT via mlx-audio.
+// DefaultSTTModel is the default ASR model for local STT via mlx-audio.
 // Exported so callers (e.g., CLI) can reference it, but the CLI uses its own
 // resolution chain (flag > config > env > default). This constant serves as
 // a safety net for programmatic callers that pass an empty model string.
-const DefaultSTTModel = "mlx-community/whisper-large-v3-turbo"
+const DefaultSTTModel = "mlx-community/Qwen3-ASR-1.7B-8bit"
 
 // LocalSTTError is a classified error from the local mlx-audio STT backend.
 // The Reason field distinguishes failure modes so the agent can take appropriate

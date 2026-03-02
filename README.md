@@ -4,10 +4,6 @@ Name: **xuezh** is short for **学中文** (learn Chinese).
 
 This repo is a **local learning engine** for Mandarin study. It is designed to be used as a **tool/skill** behind a bot runtime + SOTA LLM (Clawdbot is the recommended integration), but it is also a plain **CLI** you can call however you want.
 
-## Authorship
-
-Primary author: **Codex** using the **gpt-5.2-codex** model.
-
 ## Recommended usage (Clawdbot)
 **Recommended**: run `xuezh` as a CLI tool from a bot agent (Clawdbot) and parse JSON outputs.  
 Use a config file for credentials/behavior, and keep dependencies pinned in the bot's dev environment.  
@@ -33,14 +29,14 @@ Key interaction flows (bot ↔ user):
    ```
    Bot reads `data.assessment` + `data.transcript` and responds with targeted feedback.
 
-2) **Listen and repeat (text → audio)**  
-   User asks “How do I say …?”  
+2) **Listen and repeat (text → audio)**
+   User asks “How do I say …?”
    Bot calls:
-   
+
    ```text
-   xuezh audio tts --text "你好" --json
+   xuezh audio tts --text “你好” --backend local --json
    ```
-   Bot returns the `audio_tts` artifact as a voice note.
+   Bot returns the `audio_tts` artifact as a voice note. Use `--backend edge-tts` for cloud fallback.
 
 3) **Progress recap (facts → summary)**  
    User asks “How am I doing?”  
@@ -75,16 +71,21 @@ region = "westeurope"
 backend_global = "azure.speech"
 process_voice_backend = "azure.speech"
 convert_backend = "ffmpeg"
-tts_backend = "edge-tts"
+tts_backend = "local"           # "local" (mlx-audio) or "edge-tts"
+stt_backend = "local"           # "local" (mlx-audio) or "whisper"
+stt_model = "mlx-community/Qwen3-ASR-1.7B-8bit"
 inline_max_bytes = 200000
 ```
 
 ## Other usage (CLI)
-This is a standard CLI. You can call it from any script or workflow as long as its dependencies are available:
+This is a standard Go CLI. You can call it from any script or workflow as long as its dependencies are available:
 ```text
-nix run github:joshp123/xuezh
 xuezh version --json
-xuezh audio process-voice --in /path/to/voice.m4a --ref-text "你好" --json
+xuezh audio server start                                                    # start mlx-audio server
+xuezh audio tts --text "你好" --backend local --json                        # local TTS
+xuezh audio stt --in /path/to/audio.wav --backend local --json              # local STT
+xuezh audio process-voice --in /path/to/voice.m4a --ref-text "你好" --json  # pronunciation assessment
+xuezh audio server stop                                                     # stop server when done
 ```
 
 ## Core commands + example outputs
@@ -101,10 +102,16 @@ $ xuezh audio process-voice --in /path/to/voice.m4a --ref-text "你好" --json
 {"ok":true,"schema_version":"1.0","command":"audio.process-voice","data":{"assessment":{...},"transcript":{"text":"你好"}},"artifacts":[...],"truncated":false,"limits":{"inline_bytes_max":200000}}
 ```
 
-Text-to-speech (audio artifact):
+Text-to-speech (local backend):
 ```text
-$ xuezh audio tts --text "你好" --json
-{"ok":true,"schema_version":"1.0","command":"audio.tts","data":{"voice":"zh-CN-XiaoxiaoNeural"},"artifacts":[{"purpose":"audio_tts","path":"artifacts/audio/tts/....wav"}],"truncated":false,"limits":{}}
+$ xuezh audio tts --text "你好" --backend local --json
+{"ok":true,"schema_version":"1.0","command":"audio.tts","data":{"voice":"Vivian","backend":"local"},"artifacts":[{"purpose":"audio_tts","path":"artifacts/audio/tts/....wav"}],"truncated":false,"limits":{}}
+```
+
+Speech-to-text (local backend):
+```text
+$ xuezh audio stt --in /path/to/audio.wav --backend local --json
+{"ok":true,"schema_version":"1.0","command":"audio.stt","data":{"transcript":{"text":"你好","duration":1.5}},"artifacts":[],"truncated":false,"limits":{}}
 ```
 
 SRS review (recall vs pronunciation):
@@ -125,16 +132,30 @@ The engine must remain **ZFC-compliant**: no local ranking/selection heuristics;
 
 ## Audio pipeline architecture (STT/TTS)
 
-**Input normalization:** all audio is normalized to WAV via `ffmpeg` before any backend call.  
-**STT / assessment:** `audio.process-voice` runs STT + pronunciation assessment (default backend is Azure Speech).  
-**Artifacts:** full raw outputs are stored as artifacts; the CLI response inlines only the actionable subset.  
-**TTS:** `audio.tts` uses `edge-tts` to materialize voice audio into an artifact.  
-**Local fallback:** `whisper` provides a local STT path when Azure isn't used.
+**Input normalization:** all audio is normalized to WAV via `ffmpeg` before any backend call.
+**STT / assessment:** `audio.process-voice` runs STT + pronunciation assessment (default backend is Azure Speech).
+**Artifacts:** full raw outputs are stored as artifacts; the CLI response inlines only the actionable subset.
+
+**TTS backends:**
+- `local` — Qwen3-TTS via mlx-audio on Apple Silicon (GPU-accelerated, no internet required)
+- `edge-tts` — Microsoft Edge TTS (cloud, internet required)
+
+**STT backends:**
+- `local` — Whisper via mlx-audio on Apple Silicon (GPU-accelerated, no internet required)
+- `whisper` — Whisper CLI subprocess (CPU-based fallback)
+
+**Server lifecycle:** the mlx-audio server must be running for local TTS/STT. Manage via:
+```text
+xuezh audio server start [--port 8921] [--model Qwen3-TTS-12Hz-0.6B-Base-8bit]
+xuezh audio server status --json
+xuezh audio server stop
+```
 
 ## Runtime dependencies
 - `ffmpeg` (audio conversion)
-- `edge-tts` (TTS voice)
-- `whisper` (local STT fallback; Azure is default)
+- `mlx-audio` (local TTS/STT server on Apple Silicon — `pip install mlx-audio`)
+- `edge-tts` (cloud TTS fallback)
+- `whisper` (CLI STT fallback)
 - Azure Speech SDK + credentials for pronunciation assessment
 
 Azure notes:
@@ -154,9 +175,9 @@ Azure notes:
    devenv shell
    ```
 
-2) (Optional) Install the package in editable mode:
+2) Build:
    ```bash
-   python -m pip install -e .[dev]
+   go build ./...
    ```
 
 3) Run the CLI:
@@ -167,7 +188,7 @@ Azure notes:
 
 4) Run tests:
    ```bash
-   pytest
+   go test ./...
    ```
 
 ## Default dataset seed (HSK)
@@ -194,7 +215,7 @@ Notes:
 - `schemas/` : JSON Schemas (contract stubs; to be enforced by tickets)
 - `tests/fixtures/` : minimal dataset fixtures
 - `datasets/` : pinned upstream HSK snapshot for local seeding
-- `src/xuezh/` : Python package + CLI skeleton (`xuezh`)
+- `internal/xuezh/` : Go packages (audio, cli, srs, config, etc.)
 - `tickets/` : implementation tickets (Beads source of truth)
 - `specs/` : user requirements, BDD scenarios, and testing pyramid strategy
 - `skills/chinese-learning-orchestrator/` : the Skill prompt glue (SKILL.md + references)
