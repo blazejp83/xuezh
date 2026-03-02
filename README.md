@@ -72,7 +72,6 @@ backend_global = "azure.speech"
 process_voice_backend = "azure.speech"
 convert_backend = "ffmpeg"
 tts_backend = "local"           # "local" (mlx-audio) or "edge-tts"
-stt_backend = "local"           # "local" (mlx-audio) or "whisper"
 stt_model = "mlx-community/Qwen3-ASR-1.7B-8bit"
 inline_max_bytes = 200000
 ```
@@ -83,7 +82,7 @@ This is a standard Go CLI. You can call it from any script or workflow as long a
 xuezh version --json
 xuezh audio server start                                                    # start mlx-audio server
 xuezh audio tts --text "你好" --backend local --json                        # local TTS
-xuezh audio stt --in /path/to/audio.wav --backend local --json              # local STT
+xuezh audio stt --in /path/to/audio.wav --json                              # local STT
 xuezh audio process-voice --in /path/to/voice.m4a --ref-text "你好" --json  # pronunciation assessment
 xuezh audio server stop                                                     # stop server when done
 ```
@@ -108,9 +107,9 @@ $ xuezh audio tts --text "你好" --backend local --json
 {"ok":true,"schema_version":"1.0","command":"audio.tts","data":{"voice":"Vivian","backend":"local"},"artifacts":[{"purpose":"audio_tts","path":"artifacts/audio/tts/....wav"}],"truncated":false,"limits":{}}
 ```
 
-Speech-to-text (local backend):
+Speech-to-text:
 ```text
-$ xuezh audio stt --in /path/to/audio.wav --backend local --json
+$ xuezh audio stt --in /path/to/audio.wav --json
 {"ok":true,"schema_version":"1.0","command":"audio.stt","data":{"transcript":{"text":"你好","duration":1.5}},"artifacts":[],"truncated":false,"limits":{}}
 ```
 
@@ -140,9 +139,7 @@ The engine must remain **ZFC-compliant**: no local ranking/selection heuristics;
 - `local` — Qwen3-TTS via mlx-audio on Apple Silicon (GPU-accelerated, no internet required)
 - `edge-tts` — Microsoft Edge TTS (cloud, internet required)
 
-**STT backends:**
-- `local` — Whisper via mlx-audio on Apple Silicon (GPU-accelerated, no internet required)
-- `whisper` — Whisper CLI subprocess (CPU-based fallback)
+**STT:** Qwen3-ASR via mlx-audio on Apple Silicon (GPU-accelerated, no internet required). Azure Speech handles its own STT internally when used for pronunciation assessment.
 
 **Server lifecycle:** the mlx-audio server must be running for local TTS/STT. Manage via:
 ```text

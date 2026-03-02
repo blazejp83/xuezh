@@ -956,8 +956,7 @@ func runAudioStt(args []string) int {
 	fs := flag.NewFlagSet("audio stt", flag.ContinueOnError)
 	fs.SetOutput(os.Stderr)
 	inPath := fs.String("in", "", "input audio path")
-	backend := fs.String("backend", "", "backend (local|whisper)")
-	model := fs.String("model", "", "STT model (local backend only)")
+	model := fs.String("model", "", "STT model for local backend")
 	_ = fs.Bool("json", true, "Output JSON envelope")
 	if err := fs.Parse(args); err != nil {
 		return 1
@@ -965,16 +964,8 @@ func runAudioStt(args []string) int {
 	if *inPath == "" {
 		return emitTypedError("audio.stt", "INVALID_ARGUMENT", "in is required", map[string]any{"in": *inPath})
 	}
-	resolvedBackend := resolveAudioBackend(*backend, "whisper", "XUEZH_AUDIO_STT_BACKEND", "stt_backend")
-
-	if resolvedBackend != "local" && resolvedBackend != "whisper" {
-		return emitTypedError("audio.stt", "INVALID_ARGUMENT",
-			fmt.Sprintf("unsupported STT backend: %s (valid: local, whisper)", resolvedBackend),
-			map[string]any{"backend": resolvedBackend})
-	}
 
 	// Model resolution: flag > config > env > default.
-	// Only relevant for "local" backend; whisper CLI manages its own model.
 	resolvedModel := *model
 	if resolvedModel == "" {
 		if value, ok := configString("audio", "stt_model"); ok {
@@ -990,55 +981,25 @@ func runAudioStt(args []string) int {
 		resolvedModel = "mlx-community/Qwen3-ASR-1.7B-8bit"
 	}
 
-	var result audio.SttResult
-	var err error
-	if resolvedBackend == "local" {
-		result, err = audio.LocalSTT(*inPath, resolvedModel)
-	} else {
-		result, err = audio.STTAudio(*inPath, resolvedBackend)
-	}
+	result, err := audio.LocalSTT(*inPath, resolvedModel)
 	if err != nil {
 		var localSTTErr audio.LocalSTTError
 		if errors.As(err, &localSTTErr) {
 			details := map[string]any{
 				"reason":  localSTTErr.Reason,
 				"in":      *inPath,
-				"backend": resolvedBackend,
+				"backend": "local",
 			}
 			for k, v := range localSTTErr.Details {
 				details[k] = v
 			}
 			return emitTypedError("audio.stt", "BACKEND_FAILED", localSTTErr.Error(), details)
 		}
-		var toolMissing process.ToolMissingError
-		if errors.As(err, &toolMissing) {
-			return emitTypedError(
-				"audio.stt",
-				"TOOL_MISSING",
-				err.Error(),
-				map[string]any{"tool": toolMissing.Tool, "in": *inPath, "backend": resolvedBackend},
-			)
-		}
-		var processFailed process.ProcessFailedError
-		if errors.As(err, &processFailed) {
-			return emitTypedError(
-				"audio.stt",
-				"BACKEND_FAILED",
-				"audio backend failed during stt",
-				map[string]any{
-					"cmd":        processFailed.Cmd,
-					"returncode": processFailed.ReturnCode,
-					"stderr":     trim(processFailed.Stderr),
-					"in":         *inPath,
-					"backend":    resolvedBackend,
-				},
-			)
-		}
 		return emitTypedError(
 			"audio.stt",
-			"INVALID_ARGUMENT",
+			"BACKEND_FAILED",
 			err.Error(),
-			map[string]any{"in": *inPath, "backend": resolvedBackend},
+			map[string]any{"in": *inPath, "backend": "local"},
 		)
 	}
 	out := envelope.OK("audio.stt", result.Data, result.Artifacts, result.Truncated, result.Limits)
@@ -1058,10 +1019,9 @@ func runAudioProcessVoice(args []string) int {
 		return emitTypedError("audio.process-voice", "INVALID_ARGUMENT", "in and ref-text are required", map[string]any{"in": *inPath, "ref_text": *refText})
 	}
 	backend := resolveAudioBackend("", "azure.speech", "XUEZH_AUDIO_PROCESS_VOICE_BACKEND", "process_voice_backend")
-	sttBackend := resolveAudioBackend("", "whisper", "XUEZH_AUDIO_STT_BACKEND", "stt_backend")
 
 	// STT model resolution: config > env > default.
-	// No CLI flag for process-voice; model comes from config/env/default.
+	// Only used when backend is "local" (azure.speech handles STT internally).
 	sttModel := ""
 	if value, ok := configString("audio", "stt_model"); ok {
 		sttModel = value
@@ -1075,7 +1035,7 @@ func runAudioProcessVoice(args []string) int {
 		sttModel = "mlx-community/Qwen3-ASR-1.7B-8bit"
 	}
 
-	result, err := audio.ProcessVoice(*inPath, *refText, backend, sttBackend, sttModel)
+	result, err := audio.ProcessVoice(*inPath, *refText, backend, sttModel)
 	if err != nil {
 		var azureErr audio.AzureSpeechError
 		if errors.As(err, &azureErr) {
@@ -1094,11 +1054,10 @@ func runAudioProcessVoice(args []string) int {
 		var localSTTErr audio.LocalSTTError
 		if errors.As(err, &localSTTErr) {
 			details := map[string]any{
-				"reason":      localSTTErr.Reason,
-				"ref_text":    *refText,
-				"in":          *inPath,
-				"backend":     backend,
-				"stt_backend": sttBackend,
+				"reason":   localSTTErr.Reason,
+				"ref_text": *refText,
+				"in":       *inPath,
+				"backend":  backend,
 			}
 			for k, v := range localSTTErr.Details {
 				details[k] = v
