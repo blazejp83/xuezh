@@ -4,17 +4,17 @@
 
 See: .planning/PROJECT.md (updated 2026-02-28)
 
-**Core value:** Reliable, low-latency Chinese TTS that works locally on Apple Silicon without internet dependency, controllable via CLI by an AI agent.
-**Current focus:** Phase 3 — Polish & Integration (plan 02 complete)
+**Core value:** Reliable, low-latency Chinese TTS and STT that works locally on Apple Silicon without internet dependency, controllable via CLI by an AI agent.
+**Current focus:** Milestone v1.1 Local STT — Phase 4 (Local STT Client)
 
 ## Current Position
 
-Phase: 3 of 3 (Polish & Integration) — IN PROGRESS
-Plan: 02 complete
-Status: Plan 03-02 complete (speech style control via --instruct parameter), ready for Plan 03-03
-Last activity: 2026-03-01 — Plan 03-02 completed (instruct parameter for speech style)
+Phase: 4 of 6 (Local STT Client)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-03-02 — Milestone v1.1 created
 
-Progress: ████████░░ ~80%
+Progress: ██████░░░░ ~65% (v1.0 complete, v1.1 starting)
 
 ## Performance Metrics
 
@@ -74,8 +74,12 @@ None yet.
 
 None yet.
 
+### Roadmap Evolution
+
+- Milestone v1.1 Local STT created: local STT via mlx-audio server, 3 phases (Phase 4-6)
+
 ## Session Continuity
 
-Last session: 2026-03-01
-Stopped at: Phase 3, Plan 02 complete (speech style control via --instruct parameter)
-Resume file: .planning/phases/03-polish-integration/03-02-SUMMARY.md
+Last session: 2026-03-02
+Stopped at: Milestone v1.1 initialization
+Resume file: None

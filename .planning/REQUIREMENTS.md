@@ -29,6 +29,26 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **BKND-01**: Edge-tts backend continues to work unchanged
 - [x] **BKND-02**: Agent selects backend explicitly per TTS call (`--backend local` vs `--backend edge-tts`)
 
+## v1.1 Requirements
+
+Requirements for local STT milestone. Replaces whisper CLI with mlx-audio HTTP transcription.
+
+### Local STT Client
+
+- [ ] **STT-01**: Agent can transcribe Chinese audio via HTTP POST to `/v1/audio/transcriptions` on running mlx-audio server
+- [ ] **STT-02**: Transcription response parsed into structured transcript (text, segments with timestamps)
+- [ ] **STT-03**: STT errors return structured JSON for failure modes (server down, timeout, unsupported format, model error)
+
+### STT Backend Selection
+
+- [ ] **STT-04**: Whisper CLI backend continues to work unchanged
+- [ ] **STT-05**: Agent selects STT backend explicitly (`--backend local` vs `--backend whisper`)
+
+### STT Polish
+
+- [ ] **STT-06**: Agent can select transcription model for local STT backend
+- [ ] **STT-07**: Transcription response includes confidence scores and word-level timestamps when available
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -73,11 +93,20 @@ Which phases cover which requirements. Updated by create-roadmap.
 | BKND-01 | Phase 3 | Complete |
 | BKND-02 | Phase 3 | Complete |
 
+| STT-01 | Phase 4 | Pending |
+| STT-02 | Phase 4 | Pending |
+| STT-03 | Phase 4 | Pending |
+| STT-04 | Phase 5 | Pending |
+| STT-05 | Phase 5 | Pending |
+| STT-06 | Phase 6 | Pending |
+| STT-07 | Phase 6 | Pending |
+
 **Coverage:**
-- v1 requirements: 13 total
-- Mapped to phases: 13
+- v1.0 requirements: 13 total (all complete)
+- v1.1 requirements: 7 total
+- Mapped to phases: 20
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-28*
-*Last updated: 2026-02-28 after roadmap creation*
+*Last updated: 2026-03-02 after v1.1 milestone creation*
